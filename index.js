@@ -52,7 +52,7 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
       app.post('/volunteer-request', async (req, res) => {
         const item = req.body;
         console.log(item);
-        const result = await volunteersCollection.insertOne(item);
+        const result = await requestCollection.insertOne(item);
         res.send(result);
       });
 
@@ -72,7 +72,45 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
         const result = await cursor.toArray();
         res.send(result);
       });
+// get data for organizer personal gmail
+    app.get('/my-posts', async(req, res)=>{
+      const email = req.query.email;
+      const query = { 'organizer.email': email };
+      console.log(query);
+     const result = await volunteersCollection.find(query).toArray();
+     res.send(result)
+
+    })
+
+
+  // My request (r=organizer) from volunteer
+  app.get('/myRequest/:email', async (req, res) => {
+    const email = req.params.email;
+    const query = { organizer_email: email };
+    console.log(query);
+   const result = await requestCollection.find(query).toArray(); 
+    res.send(result);
+  });
+
+
+  // status handle part for organizer
+  app.patch('/myRequest/:id/approve', async (req, res) => {
+    const id = req.params.id;
+    const updateDoc = { $set: { status: 'Approved' } };
+    const query = { _id: new ObjectId(id) };
+    
+    const result = await requestCollection.updateOne(query, updateDoc);
+    res.send(result);
+  });
   
+  app.patch('/myRequest/:id/reject', async (req, res) => {
+    const id = req.params.id;
+    const updateDoc = { $set: { status: 'Rejected' } };
+    const query = { _id: new ObjectId(id) };
+    
+    const result = await requestCollection.updateOne(query, updateDoc);
+    res.send(result);
+  });
       console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
       // Ensures that the client will close when you finish/error
