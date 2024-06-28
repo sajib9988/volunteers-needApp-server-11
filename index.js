@@ -12,7 +12,7 @@ const port = process.env.PORT || 5000;
 
 // Middleware for logging
 const logger = (req, res, next) => {
-  console.log('called', req.hostname, req.originalUrl);
+  // console.log('called', req.hostname, req.originalUrl);
   next();
 };
 
@@ -38,7 +38,9 @@ const verifyToken = (req, res, next) => {
 
 app.use(cors({
     origin: [
-      'http://localhost:5173', 
+      'http://localhost:5173',
+      'https://volunteer-project-71857.web.app',
+      'https://volunteer-project-71857.firebaseapp.com' 
     ],
     credentials: true
 }));
@@ -47,7 +49,10 @@ app.use(cookieParser());
 
 app.use(logger);
 
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.nzdhwhu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+// const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.nzdhwhu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+const uri = `mongodb://${process.env.DB_USER}:${process.env.DB_PASS}@ac-sldedcd-shard-00-00.nzdhwhu.mongodb.net:27017,ac-sldedcd-shard-00-01.nzdhwhu.mongodb.net:27017,ac-sldedcd-shard-00-02.nzdhwhu.mongodb.net:27017/?ssl=true&replicaSet=atlas-6yxqq5-shard-0&authSource=admin&retryWrites=true&w=majority&appName=Cluster0`
+
+
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -59,7 +64,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    await client.connect();
+    // await client.connect();
     
     const volunteersCollection = client.db('Assignment11').collection('VolunteersPost');
     const requestCollection = client.db('Assignment11').collection('VolunteersRequest');
@@ -109,8 +114,9 @@ app.get('/logout', (req, res) => {
     });
 
     // for details page showing each card
-    app.get('/detailsPage/:id',verifyToken, async (req, res) => {
+    app.get('/detailsPage/:id', async (req, res) => {
       const id = req.params.id;
+      console.log(id)
       const query = { _id: new ObjectId(id) };
       const result = await volunteersCollection.findOne(query);
       res.send(result);
@@ -157,16 +163,16 @@ app.get('/logout', (req, res) => {
         
         if (requestResult.modifiedCount === 1) {
           const request = await requestCollection.findOne(query);
-          console.log( 'request', request)
+          // console.log( 'request', request)
           if (request) {
             const postId = request.postId;  // Assuming your request document has a field named post_id
             const postQuery = { _id: new ObjectId(postId) };
-            console.log('postquery', postQuery);
+            // console.log('postquery', postQuery);
             const postUpdateDoc = { $inc: { volunteersNeeded: -1 } };
-            console.log('postUpdateDoc', postUpdateDoc)
+            // console.log('postUpdateDoc', postUpdateDoc)
     
             const postResult = await volunteersCollection.updateOne(postQuery, postUpdateDoc);
-            console.log("post result", postResult)
+            // console.log("post result", postResult)
             if (postResult.modifiedCount === 1) {
               res.send({ message: 'Volunteer request approved and volunteerNeeded count updated successfully.' });
             } else {
