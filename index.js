@@ -39,8 +39,8 @@ const verifyToken = (req, res, next) => {
 app.use(cors({
     origin: [
       'http://localhost:5173',
-      'https://volunteer-project-71857.web.app',
-      'https://volunteer-project-71857.firebaseapp.com' 
+      'https://volunteer-project-1.web.app',
+      'https://volunteer-project-1.firebaseapp.com' 
     ],
     credentials: true
 }));
